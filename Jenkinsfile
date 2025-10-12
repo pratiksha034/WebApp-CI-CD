@@ -6,7 +6,7 @@ pipeline {
         // IMPORTANT: Replace 'M3' and 'JDK 17' with the names configured in 
         // Manage Jenkins -> Tools -> Maven & JDK installations
         maven 'M3' 
-        jdk 'JDK 17' 
+        jdk 'JDK 21' 
     }
 
     stages {
