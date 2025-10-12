@@ -49,7 +49,7 @@ pipeline {
                 // Use 'withCredentials' to securely inject the Tomcat Manager secrets
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'tomcat-deploy-creds', 
+                        credentialsId: 'tomcat-deploy-creds',
                         usernameVariable: 'admin',    // Inject username as TOMCAT_USER
                         passwordVariable: 'pra@932214'     // Inject password as TOMCAT_PASS
                     )
