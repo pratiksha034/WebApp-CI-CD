@@ -33,7 +33,7 @@ pipeline {
                     tomcat90(
                         // IMPORTANT: Replace 'tomcat-manager-creds' with the ID of 
                         // your Username/Password credential in Jenkins
-                        credentialsId: 'tomcat-manager-creds', 
+                        credentialsId: 'tomcat-deploy-creds', 
                         // IMPORTANT: Update with your Tomcat Manager URL
                         url: 'http://<tomcat-server-ip>:8080/manager/text' 
                     )
