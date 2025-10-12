@@ -1,12 +1,17 @@
+// File: Jenkinsfile
 pipeline {
     agent any
+    
+    // Define the Tomcat Manager URL as a build parameter
     parameters {
-        string(name: 'TOMCAT_URL', defaultValue: 'http://localhost:8080', description: 'The base URL for the Tomcat Manager (e.g., http://192.168.1.100:8080)')
+        string(name: 'TOMCAT_URL', defaultValue: 'http://localhost:8080', 
+               description: 'The base URL for the Tomcat Manager (e.g., http://192.168.1.100:8080)')
     }
 
+    // Ensure Maven and JDK tools are configured in Jenkins
     tools {
-        jdk 'JDK21' // Replace with your configured JDK name
-        maven 'M3'  // Replace with your configured Maven name
+        jdk 'JDK21' // Make sure this name matches your Jenkins tool configuration
+        maven 'M3'  // Make sure this name matches your Jenkins tool configuration
     }
 
     stages {
@@ -20,6 +25,7 @@ pipeline {
         stage('Build & Package WAR') {
             steps {
                 echo '2. Compiling and packaging into WAR file...'
+                // Build the project, skipping tests for speed
                 sh 'mvn clean package -DskipTests'
             }
         }
@@ -27,6 +33,7 @@ pipeline {
         stage('Archive Artifact') {
             steps {
                 echo '3. Archiving the WAR artifact...'
+                // Archive the built WAR file for later use/download
                 archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             }
         }
@@ -35,23 +42,20 @@ pipeline {
             steps {
                 echo "4. Deploying WAR file to Tomcat at: ${params.TOMCAT_URL}"
 
-                // IMPORTANT: Use the actual artifact name from your pom.xml (WebApp-CI-CD-1.0-SNAPSHOT.war)
+                // Define WAR file details based on your pom.xml:
                 def warFile = "WebApp-CI-CD-1.0-SNAPSHOT.war" 
-                
-                // IMPORTANT: Use the correct path (which should match the finalName in your pom.xml, which is WebApp-CI-CD)
                 def contextPath = "/WebApp-CI-CD" 
 
-                // Use 'withCredentials' to inject the secrets as environment variables
+                // Use 'withCredentials' to securely inject the Tomcat Manager secrets
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'tomcat-deploy-creds', 
-                        usernameVariable: 'admin', 
-                        passwordVariable: 'pra@932214'
+                        credentialsId: 'tomcat-deploy-creds', 
+                        usernameVariable: 'admin',    // Inject username as TOMCAT_USER
+                        passwordVariable: 'pra@932214'     // Inject password as TOMCAT_PASS
                     )
                 ]) {
-                    // Using 'bat' command for Windows environment.
-                    // Access variables using %VARIABLE_NAME% syntax.
-                    // Note: If 'curl' isn't available, you might need to use 'powershell' or install curl/wget.
+                    // Use 'bat' command (for Windows) to execute curl for deployment.
+                    // Variables are accessed using %VARIABLE_NAME%
                     bat """
                     echo Attempting deployment via curl...
                     curl -u %TOMCAT_USER%:%TOMCAT_PASS% -T target/${warFile} "${params.TOMCAT_URL}/manager/text/deploy?path=${contextPath}&update=true"
